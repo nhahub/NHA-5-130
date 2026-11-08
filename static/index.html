@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aerial Image Change Detection Studio | DEPI AI Graduation Project</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-group">
+        <div class="logo-badge">🛰️</div>
+        <div class="title-box">
+          <h1>Aerial Change Detection Studio</h1>
+          <p>Bi-temporal Siamese U-Net Deep Learning | LEVIR-CD+ Benchmark</p>
+        </div>
+      </div>
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab(this, 'studio')">Interactive Studio</button>
+        <button class="tab-btn" onclick="switchTab(this, 'benchmarks')">Benchmarks & Metrics</button>
+        <button class="tab-btn" onclick="switchTab(this, 'docs')">Documentation & Deliverables</button>
+        <button class="tab-btn" onclick="switchTab(this, 'team')">Team & Supervisors</button>
+        <a href="/static/presentation.html" target="_blank" class="tab-btn" style="text-decoration: none; color: var(--accent); border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.08); font-weight: 700;">📽️ Presentation Mode</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Project Team & System Bar -->
+  <div class="team-badge-bar">
+    <div class="team-inner">
+      <div class="team-members-list">
+        <div class="member-pill"><span class="dot"></span> Ahmed Refaat (Lead ML Engineer)</div>
+        <div class="member-pill"><span class="dot"></span> Ahmed Reda (Deep Learning Specialist)</div>
+        <div class="member-pill"><span class="dot"></span> Raeed Youssef (Data Systems Specialist)</div>
+        <div class="member-pill"><span class="dot"></span> Ahmed Qotb (QA & Metrics Lead)</div>
+      </div>
+      <div>
+        <span class="badge-device" id="device-badge">__DEVICE_NAME__</span>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <!-- TAB 1: INTERACTIVE STUDIO -->
+    <div id="tab-studio" class="tab-content active">
+      <div class="grid-studio">
+        <!-- Sidebar Controls -->
+        <aside class="card">
+          <div class="panel-title">
+            <span>⚙️ Control Panel</span>
+            <span id="sample-title-badge" style="font-size: 0.7rem; color: var(--accent); font-family: var(--font-mono);">SCENE: scene_01_train_638</span>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">Sample Source</label>
+            <select id="sample-mode" onchange="onSampleModeChange()">
+              <option value="preset">Preloaded Benchmark Scenes (Offline)</option>
+              <option value="upload">Upload Custom Image Pair</option>
+            </select>
+          </div>
+
+          <div id="preset-controls" class="control-group">
+            <label class="control-label">Select Test Scene</label>
+            <select id="preset-select" onchange="onPresetSelect()">
+              <option value="scene_01_train_638" selected>scene_01_train_638 (demo)</option>
+              <option value="scene_02_train_645">scene_02_train_645 (demo)</option>
+              <option value="scene_03_train_648">scene_03_train_648 (demo)</option>
+              <option value="scene_04_train_649">scene_04_train_649 (demo)</option>
+              <option value="scene_05_train_650">scene_05_train_650 (demo)</option>
+              <option value="scene_06_train_655">scene_06_train_655 (demo)</option>
+              <option value="scene_07_train_659">scene_07_train_659 (demo)</option>
+              <option value="scene_08_train_663">scene_08_train_663 (demo)</option>
+            </select>
+          </div>
+
+          <div id="upload-controls" class="control-group" style="display: none;">
+            <label class="control-label">Image A (Pre-Period / Before)</label>
+            <input type="file" id="file-a" accept="image/*" onchange="onFileUpload('a')" style="margin-bottom: 0.5rem; width: 100%;">
+            <label class="control-label">Image B (Post-Period / After)</label>
+            <input type="file" id="file-b" accept="image/*" onchange="onFileUpload('b')" style="width: 100%;">
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">Model Architecture</label>
+            <div class="radio-card-group">
+              <div class="radio-card selected" onclick="selectModel('ensemble', this)">
+                <input type="radio" name="model" value="ensemble" checked>
+                <div>
+                  <div style="font-weight: 600; font-size: 0.85rem;">SOTA Ensemble <span class="badge-sota">RECOMMENDED</span></div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Concat (0.45) + Diff-Cat (0.55) | F1: 0.785</div>
+                </div>
+              </div>
+              <div class="radio-card" onclick="selectModel('diff_cat', this)">
+                <input type="radio" name="model" value="diff_cat">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.85rem;">Diff-Enhanced U-Net</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">diff_cat fusion + pos_weight=10 | IoU: 0.647</div>
+                </div>
+              </div>
+              <div class="radio-card" onclick="selectModel('concat', this)">
+                <input type="radio" name="model" value="concat">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.85rem;">Baseline Siamese U-Net</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">standard channel concatenation | IoU: 0.605</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Decision Threshold</span>
+              <span id="threshold-val" class="slider-val">0.50</span>
+            </div>
+            <div class="slider-container">
+              <input type="range" id="threshold-slider" min="0.10" max="0.90" step="0.05" value="0.50" oninput="onThresholdChange(this.value)">
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="checkbox-row">
+              <input type="checkbox" id="tta-checkbox">
+              <span>4-Fold Test-Time Augmentation (TTA)</span>
+            </label>
+            <label class="checkbox-row">
+              <input type="checkbox" id="postprocess-checkbox" checked>
+              <span>Morphological Noise Filter & Hole Fill</span>
+            </label>
+          </div>
+
+          <button id="btn-run" class="btn-primary" onclick="runDetection()">
+            <span class="spinner" id="btn-spinner"></span>
+            <span id="btn-text">🚀 Run Change Detection</span>
+          </button>
+        </aside>
+
+        <!-- Right Results Panel -->
+        <section class="card">
+          <div class="results-header">
+            <div class="view-toggle-group">
+              <button id="btn-view-grid" class="view-btn active" onclick="switchView('grid')">
+                <span>⊞</span> 6-Up Grid View
+              </button>
+              <button id="btn-view-swipe" class="view-btn" onclick="switchView('swipe')">
+                <span>⇄</span> Interactive Swipe (Before / After)
+              </button>
+            </div>
+
+            <div class="export-group">
+              <button class="export-btn" onclick="downloadMask()" title="Download binary change mask PNG">
+                <span>💾</span> Mask PNG
+              </button>
+              <button class="export-btn" onclick="downloadOverlay()" title="Download colored glow overlay PNG">
+                <span>🖼️</span> Overlay PNG
+              </button>
+              <button class="export-btn" onclick="copyStats()" title="Copy inspection metrics and geo analytics to clipboard">
+                <span>📋</span> Copy Stats
+              </button>
+            </div>
+          </div>
+
+          <!-- Real-Time Metrics Strip -->
+          <div class="metric-strip">
+            <div class="metric-card">
+              <div class="metric-value" id="m-iou">-</div>
+              <div class="metric-label">Sample IoU</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="m-f1">-</div>
+              <div class="metric-label">Sample F1-Score</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="m-prec">-</div>
+              <div class="metric-label">Precision</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="m-rec">-</div>
+              <div class="metric-label">Recall</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="m-area">-</div>
+              <div class="metric-label">Changed Area %</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="m-time">-</div>
+              <div class="metric-label">Inference Latency</div>
+            </div>
+          </div>
+
+          <!-- Swipe Curtain View (Hidden initially) -->
+          <div id="swipe-view-wrapper" style="display: none;">
+            <img id="swipe-img-a" src="/api/sample?id=scene_01_train_638&type=a" alt="Time 1 (Before)">
+            <img id="swipe-img-b" src="/api/sample?id=scene_01_train_638&type=b" alt="Time 2 (After)">
+            <div id="swipe-divider-line"></div>
+            <div id="swipe-handle">◂▸</div>
+            <div style="position: absolute; bottom: 12px; left: 16px; background: rgba(10, 15, 29, 0.85); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: #fff; border: 1px solid rgba(255,255,255,0.1); z-index: 5;">◀ Time 1 (Before)</div>
+            <div style="position: absolute; bottom: 12px; right: 16px; background: rgba(10, 15, 29, 0.85); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); z-index: 5;">Time 2 + Changes ▶</div>
+          </div>
+
+          <!-- 6-Up Viewports Grid -->
+          <div id="grid-view-wrapper" class="viewport-grid">
+            <div class="view-card">
+              <div class="view-card-header">Time 1 (Before / A)</div>
+              <div class="view-card-body" id="box-a">
+                <img src="/api/sample?id=scene_01_train_638&type=a" alt="Time 1 (Before)">
+              </div>
+            </div>
+
+            <div class="view-card">
+              <div class="view-card-header">Time 2 (After / B)</div>
+              <div class="view-card-body" id="box-b">
+                <img src="/api/sample?id=scene_01_train_638&type=b" alt="Time 2 (After)">
+              </div>
+            </div>
+
+            <div class="view-card">
+              <div class="view-card-header">Detected Changes (Overlay)</div>
+              <div class="view-card-body" id="box-overlay">
+                <div class="placeholder-text">Click "Run Change Detection" above</div>
+              </div>
+            </div>
+
+            <div class="view-card">
+              <div class="view-card-header">Binary Change Mask</div>
+              <div class="view-card-body" id="box-mask">
+                <div class="placeholder-text">Click "Run Change Detection" above</div>
+              </div>
+            </div>
+
+            <div class="view-card">
+              <div class="view-card-header">Ground Truth (Annotated)</div>
+              <div class="view-card-body" id="box-gt">
+                <img src="/api/sample?id=scene_01_train_638&type=mask" alt="Ground Truth">
+              </div>
+            </div>
+
+            <div class="view-card">
+              <div class="view-card-header">Error Analysis Map (TP/FP/FN)</div>
+              <div class="view-card-body" id="box-error">
+                <div class="placeholder-text">Click "Run Change Detection" above</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Legend -->
+          <div class="legend-box">
+            <div class="legend-item">
+              <span class="legend-color" style="background: #00E676;"></span>
+              <span>True Positive (Correct Change)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #FF1744;"></span>
+              <span>False Positive (False Alarm)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #2979FF;"></span>
+              <span>False Negative (Missed Change)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #00E5FF;"></span>
+              <span>Predicted Cyan Glow Overlay</span>
+            </div>
+          </div>
+
+          <!-- Geospatial Analytics Card (Revealed after inference) -->
+          <div id="geo-analytics-card" class="geo-card" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.6rem;">
+              <span style="font-weight: 700; font-size: 0.9rem; color: #fff;">🌍 Geospatial Footprint & Urban Analytics</span>
+              <span id="geo-density-badge" style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 6px;">Density</span>
+            </div>
+            <div class="geo-grid">
+              <div class="geo-stat-box">
+                <div class="geo-stat-val" id="geo-area">-</div>
+                <div class="geo-stat-lbl">Estimated Changed Ground Area</div>
+              </div>
+              <div class="geo-stat-box">
+                <div class="geo-stat-val" id="geo-clusters">-</div>
+                <div class="geo-stat-lbl">Detected Structure Clusters</div>
+              </div>
+              <div class="geo-stat-box">
+                <div class="geo-stat-val" id="geo-avg-size">-</div>
+                <div class="geo-stat-lbl">Average Building Footprint</div>
+              </div>
+              <div class="geo-stat-box">
+                <div class="geo-stat-val" id="geo-max-size">-</div>
+                <div class="geo-stat-lbl">Largest Connected Complex</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- TAB 2: BENCHMARKS & METRICS -->
+    <div id="tab-benchmarks" class="tab-content">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff;">📊 Experimental Benchmarks on LEVIR-CD+ Test Split</h2>
+        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6;">
+          Quantitative evaluation on 128 benchmark scenes (1024×1024 resolution) comparing our architectural innovations against classical Siamese baselines.
+        </p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Model Configuration</th>
+              <th>Fusion Mechanism</th>
+              <th>Loss Objective</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>IoU</th>
+              <th>F1-Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Siamese U-Net Baseline</strong></td>
+              <td>Channel Concat</td>
+              <td>BCE + Dice (equal)</td>
+              <td>0.793</td>
+              <td>0.720</td>
+              <td>0.605</td>
+              <td>0.754</td>
+            </tr>
+            <tr>
+              <td><strong>Diff-Enhanced U-Net</strong></td>
+              <td>Difference + Concat</td>
+              <td>Weighted BCE (w=10) + Dice</td>
+              <td>0.824</td>
+              <td>0.749</td>
+              <td>0.647</td>
+              <td>0.785</td>
+            </tr>
+            <tr style="background: rgba(0, 229, 255, 0.08); font-weight: 700;">
+              <td><span style="color: var(--accent);">★ SOTA Dual Ensemble</span></td>
+              <td>Ensemble Weighted Voting</td>
+              <td>Hybrid SOTA Objective</td>
+              <td style="color: var(--accent);">0.841</td>
+              <td style="color: var(--accent);">0.765</td>
+              <td style="color: var(--accent);">0.669</td>
+              <td style="color: var(--accent);">0.801</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff;">🔬 Key Architectural Breakthroughs</h3>
+        <ul style="color: #CBD5E1; font-size: 0.85rem; line-height: 1.8; margin-left: 1.5rem;">
+          <li><strong>Shared Encoder Representation</strong>: Twin ResNet/U-Net encoder paths guarantee temporal invariance across seasonal illumination changes.</li>
+          <li><strong>Differential Fusion Layer</strong>: Combines absolute difference <code>|A - B|</code> with concatenated representations <code>[A, B]</code> to highlight building boundary alterations.</li>
+          <li><strong>Severe Class Imbalance Mitigation</strong>: Changes represent under 5% of pixels. Weighted BCE with <code>pos_weight=10.0</code> paired with Soft Dice prevents trivial all-zero background convergence.</li>
+          <li><strong>Morphological Post-Processing Pipeline</strong>: Opening with 3×3 kernel eliminates satellite sensor noise; closing fills internal building courtyard voids.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TAB 3: DOCUMENTATION & DELIVERABLES -->
+    <div id="tab-docs" class="tab-content">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff;">📚 Project Documentation & Graduation Deliverables</h2>
+        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          Direct download hub for all formal documentation, IEEE milestone reports, technical specifications, and Jupyter research notebooks.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;">
+          <!-- Master Presentation Deck -->
+          <div style="background: #0A0F1D; border: 1px solid var(--accent); border-radius: 10px; padding: 1.25rem; box-shadow: 0 0 15px rgba(0,229,255,0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Graduation Defense Presentation</h3>
+              <span style="background: var(--accent); color: #0A0F1D; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px;">KEYNOTE</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">15-slide master slide deck formatted for graduation defense committee with all figures, equations, metrics, and architecture diagrams.</p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <a href="/docs/Graduation_Project_Final_Defense.pptx" download style="display: inline-flex; align-items: center; gap: 0.4rem; background: var(--accent); color: #0A0F1D; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
+                📥 Download PowerPoint (.pptx)
+              </a>
+              <a href="/static/presentation.html" target="_blank" style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); color: var(--accent); padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+                📽️ View Web Deck
+              </a>
+            </div>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 10px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Master Graduation Report</h3>
+              <span style="background: var(--accent); color: #0A0F1D; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px;">REPORT</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Comprehensive thesis covering pipeline architecture, loss formulation, experimental setup, and societal impact.</p>
+            <a href="/docs/Graduation_Project_Master_Report.docx" download style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); color: var(--accent); padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+              📥 Download Word Report (.docx)
+            </a>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 10px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Phase 1: Project Plan & Scope</h3>
+              <span style="background: #7C4DFF; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px;">PHASE 1</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Requirements specification, timeline milestones, and data acquisition protocols.</p>
+            <a href="/docs/Phase_01_Project_Plan_and_Scope.docx" download style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(124, 77, 255, 0.1); border: 1px solid rgba(124, 77, 255, 0.3); color: #B388FF; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+              📥 Download Document (.docx)
+            </a>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 10px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Phase 2: Data Pipeline & EDA</h3>
+              <span style="background: #7C4DFF; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px;">PHASE 2</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">LEVIR-CD+ dataset distribution, 512×512 tiling strategy, and augmentation design.</p>
+            <a href="/docs/Phase_02_Data_Pipeline_and_EDA.docx" download style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(124, 77, 255, 0.1); border: 1px solid rgba(124, 77, 255, 0.3); color: #B388FF; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+              📥 Download Document (.docx)
+            </a>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 10px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Phase 3: Model Architecture</h3>
+              <span style="background: #7C4DFF; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px;">PHASE 3</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Siamese twin weight sharing, differential fusion, and mathematical loss formulations.</p>
+            <a href="/docs/Phase_03_Model_Architecture_and_Training.docx" download style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(124, 77, 255, 0.1); border: 1px solid rgba(124, 77, 255, 0.3); color: #B388FF; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+              📥 Download Document (.docx)
+            </a>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 10px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Phase 4: Evaluation & Testing</h3>
+              <span style="background: #7C4DFF; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px;">PHASE 4</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Confusion matrices, PR curves, F1-scores across building sizes, and TTA validation.</p>
+            <a href="/docs/Phase_04_Evaluation_and_Testing.docx" download style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(124, 77, 255, 0.1); border: 1px solid rgba(124, 77, 255, 0.3); color: #B388FF; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+              📥 Download Document (.docx)
+            </a>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 10px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Phase 5: Production Deployment</h3>
+              <span style="background: #7C4DFF; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px;">PHASE 5</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Docker containerization, GPU acceleration, and web studio operations manual.</p>
+            <a href="/docs/Phase_05_Deployment_and_Optimization.docx" download style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(124, 77, 255, 0.1); border: 1px solid rgba(124, 77, 255, 0.3); color: #B388FF; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+              📥 Download Document (.docx)
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TEAM & SUPERVISORS -->
+    <div id="tab-team" class="tab-content">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff;">👥 Project Team Members</h2>
+        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          Digital Egypt Pioneers Initiative (DEPI) — Artificial Intelligence Track Graduation Project.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">👨‍💻</div>
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff;">Ahmed Refaat Abd-Elmotelb</h3>
+            <p style="font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">Lead ML Engineer & Pipeline Architect</p>
+            <p style="font-size: 0.775rem; color: var(--text-muted); line-height: 1.5;">End-to-end Siamese training pipeline, sliding-window tiled inference engine, model serving, and full-stack production architecture.</p>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🧠</div>
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff;">Ahmed Reda Mohamed</h3>
+            <p style="font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">Deep Learning Specialist & Loss Design</p>
+            <p style="font-size: 0.775rem; color: var(--text-muted); line-height: 1.5;">Differential fusion block design, weighted BCE + Dice loss optimization, class imbalance handling, and learning rate scheduling.</p>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🔄</div>
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff;">Raeed Youssef Mahfouz</h3>
+            <p style="font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">Data Systems & Augmentation Specialist</p>
+            <p style="font-size: 0.775rem; color: var(--text-muted); line-height: 1.5;">Dataset acquisition, bi-temporal color jittering, random dihedral transforms, sample caching, and morphological post-processing.</p>
+          </div>
+
+          <div style="background: #0A0F1D; border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff;">Ahmed Mohamed Qotb</h3>
+            <p style="font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">Evaluation Metrics & Quality Assurance</p>
+            <p style="font-size: 0.775rem; color: var(--text-muted); line-height: 1.5;">Benchmark validation on test split, error analysis breakdown (TP/FP/FN), confusion matrices, and deliverable quality assurance.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff;">🔗 Project Repository & Deliverables</h3>
+        <p style="color: #CBD5E1; font-size: 0.85rem; line-height: 1.8;">
+          <strong>GitHub Repository:</strong> <a href="https://github.com/nhahub/NHA-5-130" target="_blank" style="color: var(--accent); text-decoration: none;">https://github.com/nhahub/NHA-5-130</a><br>
+          <strong>Dataset:</strong> LEVIR-CD+ (High-Resolution Bi-temporal Aerial Images for Change Detection)<br>
+          <strong>Framework:</strong> PyTorch 2.x + CUDA Acceleration + SciPy Geospatial Analytics
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

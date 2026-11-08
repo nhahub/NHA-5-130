@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Final Defense Presentation | Aerial Image Change Detection (LEVIR-CD+)</title>
+  <style>
+    :root {
+      --bg: #0A0F1D;
+      --card-bg: #12192C;
+      --card-border: #1E293B;
+      --accent: #00E5FF;
+      --accent-green: #00E676;
+      --accent-purple: #7C4DFF;
+      --accent-red: #FF1744;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Presentation Stage */
+    .slide-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1300px;
+      height: 90vh;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      overflow-y: auto;
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide.active { display: block; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      height: 56px;
+      background: #0D1424;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 50;
+    }
+    .controls-group { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-btn {
+      background: #1E293B;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { background: var(--accent); color: #0A0F1D; }
+    .slide-counter { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); font-weight: 700; }
+
+    /* Slide Typography */
+    .slide-pill {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+    .slide-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(90deg, #FFFFFF, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .slide-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .card-box {
+      background: rgba(10, 15, 29, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .card-box h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+    .card-box p, .card-box li {
+      font-size: 0.9rem;
+      color: #CBD5E1;
+      line-height: 1.7;
+    }
+    .card-box ul { margin-left: 1.25rem; }
+    .card-box strong { color: var(--accent); }
+    .slide img {
+      width: 100%;
+      height: auto;
+      max-height: 60vh;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: #000;
+    }
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
+    th, td { padding: 0.65rem 0.85rem; border-bottom: 1px solid var(--card-border); text-align: left; }
+    th { color: var(--text-muted); background: rgba(255,255,255,0.03); }
+    tr:hover { background: rgba(0, 229, 255, 0.04); }
+  </style>
+</head>
+<body>
+
+  <div class="slide-stage">
+    <!-- SLIDE 1: Title -->
+    <div class="slide active" id="slide-1">
+      <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 2rem 3rem;">
+        <div class="slide-pill">Digital Egypt Pioneers Initiative (DEPI) — Artificial Intelligence Track</div>
+        <h1 style="font-size: 2.8rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.5rem;">
+          Bi-Temporal Siamese Deep Learning for High-Resolution Aerial Image Change Detection
+        </h1>
+        <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 900px;">
+          An End-to-End Deep Learning Pipeline with SOTA Diff-Enhanced Siamese U-Net Fusion, Test-Time Augmentation, and Turnkey Geospatial Footprint Analytics on LEVIR-CD+.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <div>
+            <div style="font-weight: 700; color: #fff;">Ahmed Refaat Abd-Elmotelb</div>
+            <div style="font-size: 0.8rem; color: var(--accent);">Lead ML Engineer & Pipeline Architect</div>
+          </div>
+          <div>
+            <div style="font-weight: 700; color: #fff;">Ahmed Reda Mohamed</div>
+            <div style="font-size: 0.8rem; color: var(--accent);">Deep Learning Specialist & Loss Design</div>
+          </div>
+          <div>
+            <div style="font-weight: 700; color: #fff;">Raeed Youssef Mahfouz</div>
+            <div style="font-size: 0.8rem; color: var(--accent);">Data Systems & Augmentation Specialist</div>
+          </div>
+          <div>
+            <div style="font-weight: 700; color: #fff;">Ahmed Mohamed Qotb</div>
+            <div style="font-size: 0.8rem; color: var(--accent);">Evaluation Metrics & QA Lead</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Problem Statement -->
+    <div class="slide" id="slide-2">
+      <div class="slide-pill">Executive Summary</div>
+      <h2 class="slide-title">The Challenge of Automated Remote Sensing Change Detection</h2>
+      <div class="slide-grid-2">
+        <div class="card-box" style="border-left: 4px solid var(--accent-red);">
+          <h3 style="color: var(--accent-red);">🚨 The Urban Monitoring Crisis</h3>
+          <ul>
+            <li><strong>Severe Inspection Latency</strong>: Manual visual photointerpretation takes weeks or months across expanding metropolitan zones.</li>
+            <li><strong>Severe Illumination & Seasonal Noise</strong>: Sun angles, soil moisture, and seasonal foliage changes create 80%+ false alarms with traditional differencing algorithms.</li>
+            <li><strong>Critical Class Imbalance</strong>: Actual building structural alterations represent less than <strong>5%</strong> of total pixels; standard deep networks predict all zeros.</li>
+          </ul>
+        </div>
+        <div class="card-box" style="border-left: 4px solid var(--accent-green);">
+          <h3 style="color: var(--accent-green);">💡 Our SOTA Solution</h3>
+          <ul>
+            <li><strong>Weight-Shared Siamese Twin Encoders</strong>: Ensure temporal feature symmetry across multi-year bi-temporal aerial pairs.</li>
+            <li><strong>Dual Differential Fusion (|A - B| + [A, B])</strong>: Explicitly models boundary alterations while preserving spatial context.</li>
+            <li><strong>Weighted BCE (w=10) + Soft Dice Objective</strong>: Forces gradient propagation onto building edges despite severe class imbalance.</li>
+            <li><strong>Sub-Second GPU Inference (&lt;800ms)</strong>: Interactive web studio with swipe curtain comparison and geospatial footprint stats.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Dataset -->
+    <div class="slide" id="slide-3">
+      <div class="slide-pill">Dataset & EDA</div>
+      <h2 class="slide-title">LEVIR-CD+ Benchmark: Ultra-High Resolution Aerial Pairs</h2>
+      <div class="slide-grid-2">
+        <div class="card-box">
+          <h3>Dataset Specifications</h3>
+          <ul>
+            <li><strong>Spatial Resolution</strong>: 0.5 meters / pixel Ground Sample Distance (GSD).</li>
+            <li><strong>Image Dimensions</strong>: 1024 × 1024 pixels per aerial tile (RGB).</li>
+            <li><strong>Total Dataset Volume</strong>: 985 bi-temporal pairs (1,970 ultra-res images).</li>
+            <li><strong>Temporal Intervals</strong>: 5 to 14 years interval (2002 – 2020).</li>
+            <li><strong>Standard Benchmark Splits</strong>: 689 Train | 168 Val | 128 Test.</li>
+            <li><strong>Class Distribution</strong>: 95.2% Background vs 4.8% True Building Change.</li>
+          </ul>
+        </div>
+        <div>
+          <img src="/figures/data_samples.png" alt="LEVIR-CD+ Samples">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Architecture -->
+    <div class="slide" id="slide-4">
+      <div class="slide-pill">Deep Learning Architecture</div>
+      <h2 class="slide-title">Siamese U-Net with Diff-Cat Fusion Mechanism</h2>
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <img src="/figures/fig_architecture.png" alt="Architecture" style="max-height: 48vh;">
+      </div>
+      <div class="card-box">
+        <p><strong>Core Innovation:</strong> Twin encoders extract deep hierarchical feature maps from Time 1 (A) and Time 2 (B) with shared weights. At the bottleneck, the <strong>Diff-Cat Fusion Block</strong> computes both the element-wise absolute difference <code>|F_A - F_B|</code> and concatenated features <code>[F_A, F_B]</code>, guiding the U-Net decoder with skip connections to accurately localize change boundaries.</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Loss Function -->
+    <div class="slide" id="slide-5">
+      <div class="slide-pill">Mathematical Formulation</div>
+      <h2 class="slide-title">Loss Function Formulation: Solving Severe Class Imbalance</h2>
+      <div class="slide-grid-2">
+        <div class="card-box">
+          <h3 style="color: var(--accent);">1. Pos-Weighted Cross-Entropy (w = 10.0)</h3>
+          <p>Penalizes false negatives 10× more aggressively than false alarms:</p>
+          <div style="background: rgba(0,0,0,0.4); padding: 0.75rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-green); margin: 0.75rem 0;">
+            L_wBCE = - [ 10.0 · y · log(p) + (1 - y) · log(1 - p) ]
+          </div>
+          <p>Forces the gradient to actively update on rare building pixels instead of converging to an all-zero background.</p>
+        </div>
+        <div class="card-box">
+          <h3 style="color: var(--accent-purple);">2. Soft Dice Loss (Boundary Invariance)</h3>
+          <p>Directly optimizes the spatial overlap ratio (IoU):</p>
+          <div style="background: rgba(0,0,0,0.4); padding: 0.75rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); margin: 0.75rem 0;">
+            L_Dice = 1 - [ 2·∑(p·y) + ε ] / [ ∑(p) + ∑(y) + ε ]
+          </div>
+          <p><strong>Combined Hybrid Objective:</strong> <code>L_total = L_wBCE + L_Dice</code> balances boundary crispness and pixel-level certainty.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Training Curves -->
+    <div class="slide" id="slide-6">
+      <div class="slide-pill">Optimization Dynamics</div>
+      <h2 class="slide-title">Training Dynamics, Convergence & Loss Trajectory</h2>
+      <div style="text-align: center;">
+        <img src="/figures/curves.png" alt="Training Curves" style="max-height: 60vh;">
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Benchmarks -->
+    <div class="slide" id="slide-7">
+      <div class="slide-pill">Experimental Evaluation</div>
+      <h2 class="slide-title">Quantitative Benchmarks on LEVIR-CD+ Test Split (128 Scenes)</h2>
+      <div class="slide-grid-2">
+        <div class="card-box">
+          <h3>Benchmark Results</h3>
+          <table>
+            <thead>
+              <tr><th>Model</th><th>IoU</th><th>F1-Score</th><th>Precision</th><th>Recall</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Siamese Concat Baseline</td><td>0.605</td><td>0.754</td><td>0.793</td><td>0.720</td></tr>
+              <tr><td>Diff-Enhanced U-Net</td><td>0.647</td><td>0.785</td><td>0.824</td><td>0.749</td></tr>
+              <tr style="background: rgba(0,229,255,0.1); font-weight: 700; color: var(--accent);">
+                <td>★ SOTA Dual Ensemble</td><td>0.669</td><td>0.801</td><td>0.841</td><td>0.765</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top: 1.25rem;">
+            <p>• <strong>+4.2% IoU gain</strong> achieved by Diff-Cat fusion over standard concatenation.</p>
+            <p>• <strong>F1 &gt; 0.80</strong> surpassed via ensemble weighted voting (0.45 Concat + 0.55 Diff-Cat).</p>
+            <p>• <strong>TTA 4-Fold</strong> adds +0.8% IoU boost on subtle boundary edges.</p>
+          </div>
+        </div>
+        <div>
+          <img src="/figures/fig_metrics.png" alt="Metrics Comparison">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Visual Results -->
+    <div class="slide" id="slide-8">
+      <div class="slide-pill">Qualitative Inspection</div>
+      <h2 class="slide-title">Visual Change Detection: Residential Building Expansion</h2>
+      <div style="text-align: center;">
+        <img src="/figures/pred_sample1.png" alt="Prediction 1" style="max-height: 62vh;">
+      </div>
+    </div>
+
+    <!-- SLIDE 9: Visual Results 2 -->
+    <div class="slide" id="slide-9">
+      <div class="slide-pill">Qualitative Inspection</div>
+      <h2 class="slide-title">Visual Change Detection: Dense Industrial & Commercial Complex</h2>
+      <div style="text-align: center;">
+        <img src="/figures/pred_sample2.png" alt="Prediction 2" style="max-height: 62vh;">
+      </div>
+    </div>
+
+    <!-- SLIDE 10: Production Studio -->
+    <div class="slide" id="slide-10">
+      <div class="slide-pill">Turnkey Delivery</div>
+      <h2 class="slide-title">Production Web Studio & Geospatial Analytics Suite</h2>
+      <div class="slide-grid-2">
+        <div class="card-box">
+          <h3 style="color: var(--accent);">⚡ Engineering Highlights</h3>
+          <ul>
+            <li><strong>Sub-Second GPU Latency</strong>: Tiled sliding-window inference processes full 1024×1024 scenes in <strong>~794 ms</strong> on NVIDIA RTX GPU.</li>
+            <li><strong>Interactive Curtain Slider</strong>: Draggable before/after swipe comparison allows millimeter precision review.</li>
+            <li><strong>SciPy Morphological Cleaning</strong>: Opening (3×3) eliminates sensor speckle noise; closing fills internal building courtyards.</li>
+          </ul>
+        </div>
+        <div class="card-box">
+          <h3 style="color: var(--accent-green);">🌍 Geospatial Footprint Engine</h3>
+          <ul>
+            <li><strong>Ground Sample Distance</strong>: 0.5m GSD = 0.25 m² per pixel.</li>
+            <li><strong>Cluster Labeling</strong>: <code>scipy.ndimage.label</code> extracts connected structure count.</li>
+            <li><strong>Automated Metrics</strong>: Changed area (m² and hectares), mean footprint size, maximum complex size, and urban density indexing.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11: Team Deliverables -->
+    <div class="slide" id="slide-11">
+      <div class="slide-pill">Project Ownership</div>
+      <h2 class="slide-title">Team Contributions & Engineering Ownership</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+        <div class="card-box">
+          <div style="font-weight: 700; color: #fff; font-size: 1rem;">Ahmed Refaat Abd-Elmotelb</div>
+          <div style="font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">Lead ML Engineer & Pipeline Architect</div>
+          <p style="font-size: 0.8rem;">Siamese training pipeline, sliding-window inference engine, multi-threaded production server, Master thesis document.</p>
+        </div>
+        <div class="card-box">
+          <div style="font-weight: 700; color: #fff; font-size: 1rem;">Ahmed Reda Mohamed</div>
+          <div style="font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">Deep Learning Specialist & Loss Design</div>
+          <p style="font-size: 0.8rem;">Diff-Cat fusion architecture, weighted BCE + Soft Dice loss optimization, class imbalance handling, ablation benchmarks.</p>
+        </div>
+        <div class="card-box">
+          <div style="font-weight: 700; color: #fff; font-size: 1rem;">Raeed Youssef Mahfouz</div>
+          <div style="font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">Data Systems & Augmentation Specialist</div>
+          <p style="font-size: 0.8rem;">LEVIR-CD+ dataset discovery, dihedral D4 transforms, bi-temporal color jittering, bundled demo curation, post-processing.</p>
+        </div>
+        <div class="card-box">
+          <div style="font-weight: 700; color: #fff; font-size: 1rem;">Ahmed Mohamed Qotb</div>
+          <div style="font-size: 0.8rem; color: var(--accent); margin-bottom: 0.5rem;">Evaluation Metrics & Quality Assurance Lead</div>
+          <p style="font-size: 0.8rem;">128-scene test split benchmarks, confusion matrix analysis, TP/FP/FN error mapping, deliverable packaging & QA.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12: Conclusion -->
+    <div class="slide" id="slide-12">
+      <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <div class="slide-pill">Graduation Project Defense</div>
+        <h1 style="font-size: 3.5rem; font-weight: 900; color: var(--accent); margin-bottom: 1rem;">THANK YOU!</h1>
+        <p style="font-size: 1.5rem; font-weight: 600; color: #fff; margin-bottom: 2rem;">Questions & Technical Discussion</p>
+        <div style="background: rgba(0,0,0,0.4); padding: 1rem 2rem; border-radius: 10px; border: 1px solid var(--card-border); font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-muted);">
+          GitHub: https://github.com/nhahub/NHA-5-130<br>
+          Digital Egypt Pioneers Initiative (DEPI) — AI Track
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Controls Bar -->
+  <div class="controls-bar">
+    <div class="controls-group">
+      <button class="nav-btn" onclick="prevSlide()">◀ Previous</button>
+      <button class="nav-btn" onclick="nextSlide()">Next ▶</button>
+      <span class="slide-counter" id="slide-num">1 / 12</span>
+    </div>
+    <div class="controls-group">
+      <button class="nav-btn" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+      <a href="/docs/Graduation_Project_Final_Defense.pptx" download class="nav-btn" style="text-decoration: none;">📥 Download .PPTX</a>
+      <a href="/" class="nav-btn" style="text-decoration: none; background: var(--accent); color: #0A0F1D;">🚀 Open Web Studio</a>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 12;
+
+    function showSlide(n) {
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById('slide-' + n);
+      if (target) target.classList.add('active');
+      document.getElementById('slide-num').innerText = n + ' / ' + totalSlides;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        showSlide(currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        showSlide(currentSlide);
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      }
+    });
+  </script>
+</body>
+</html>
